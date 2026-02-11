@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SearchBar } from '@/components/SearchBar';
 import { RegionFilter } from '@/components/RegionFilter';
@@ -8,7 +8,7 @@ import { CountryGrid } from '@/components/CountryGrid';
 import { getAllCountries, searchCountries, filterByRegion } from '@/lib/api';
 import { Country, CountryCardData } from '@/lib/types';
 
-export default function Home() {
+function HomePage() {
   const searchParams = useSearchParams();
   const [countries, setCountries] = useState<CountryCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,23 +33,22 @@ export default function Home() {
           // Only filter
           data = await filterByRegion(regionQuery);
         } else {
-          // No filters
+          // Load all
           data = await getAllCountries();
         }
 
-        const formattedCountries: CountryCardData[] = data.map(country => ({
+        const mappedData: CountryCardData[] = data.map(country => ({
           name: country.name.common,
-          flag: country.flags.svg,
           population: country.population,
           region: country.region,
           capital: country.capital?.[0] || 'N/A',
-          code: country.cca3,
+          flags: country.flags,
+          cca3: country.cca3
         }));
 
-        setCountries(formattedCountries);
+        setCountries(mappedData);
       } catch (error) {
-        console.error('Failed to fetch countries:', error);
-        setCountries([]);
+        console.error('Error fetching countries:', error);
       } finally {
         setIsLoading(false);
       }
@@ -59,15 +58,21 @@ export default function Home() {
   }, [searchParams]);
 
   return (
-    <div className="container mx-auto px-4 md:px-8 py-8 md:py-12">
-      {/* Search and Filter Controls */}
-      <div className="flex flex-col md:flex-row justify-between gap-6 mb-8 md:mb-12">
+    <main className="container mx-auto px-4 py-6 md:py-12">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-10 mb-8 md:mb-12">
         <SearchBar />
         <RegionFilter />
       </div>
 
-      {/* Countries Grid */}
       <CountryGrid countries={countries} isLoading={isLoading} />
-    </div>
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8 text-center">Loading...</div>}>
+      <HomePage />
+    </Suspense>
   );
 }
