@@ -33,23 +33,22 @@ function HomeContent() {
           // Only filter
           data = await filterByRegion(regionQuery);
         } else {
-          // No filters
+          // Load all
           data = await getAllCountries();
         }
 
-        const formattedCountries: CountryCardData[] = data.map(country => ({
+        const mappedData: CountryCardData[] = data.map(country => ({
           name: country.name.common,
-          flag: country.flags.svg,
           population: country.population,
           region: country.region,
           capital: country.capital?.[0] || 'N/A',
-          code: country.cca3,
+          flag: country.flags.svg,
+          code: country.cca3
         }));
 
-        setCountries(formattedCountries);
+        setCountries(mappedData);
       } catch (error) {
-        console.error('Failed to fetch countries:', error);
-        setCountries([]);
+        console.error('Error fetching countries:', error);
       } finally {
         setIsLoading(false);
       }
@@ -59,16 +58,14 @@ function HomeContent() {
   }, [searchParams]);
 
   return (
-    <div className="container mx-auto px-4 md:px-8 py-8 md:py-12">
-      {/* Search and Filter Controls */}
-      <div className="flex flex-col md:flex-row justify-between gap-6 mb-8 md:mb-12">
+    <main className="container mx-auto px-4 py-6 md:py-12">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-10 mb-8 md:mb-12">
         <SearchBar />
         <RegionFilter />
       </div>
 
-      {/* Countries Grid */}
       <CountryGrid countries={countries} isLoading={isLoading} />
-    </div>
+    </main>
   );
 }
 
