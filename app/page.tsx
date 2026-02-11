@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SearchBar } from '@/components/SearchBar';
 import { RegionFilter } from '@/components/RegionFilter';
@@ -8,7 +8,7 @@ import { CountryGrid } from '@/components/CountryGrid';
 import { getAllCountries, searchCountries, filterByRegion } from '@/lib/api';
 import { Country, CountryCardData } from '@/lib/types';
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const [countries, setCountries] = useState<CountryCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,5 +69,25 @@ export default function Home() {
       {/* Countries Grid */}
       <CountryGrid countries={countries} isLoading={isLoading} />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 md:px-8 py-8 md:py-12">
+        <div className="flex flex-col md:flex-row justify-between gap-6 mb-8 md:mb-12">
+          <div className="h-14 bg-[var(--color-elements)] rounded-md w-full md:w-96 animate-pulse" />
+          <div className="h-14 bg-[var(--color-elements)] rounded-md w-full md:w-52 animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-80 bg-[var(--color-elements)] rounded-md animate-pulse" />
+          ))}
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
